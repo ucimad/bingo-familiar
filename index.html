@@ -423,7 +423,7 @@ const SIT = [
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const SB_URL="PEGAR_SUPABASE_URL",SB_KEY="PEGAR_SUPABASE_ANON_KEY";
+const SB_URL="https://cbscoukgrrsmhvuvmhvl.supabase.co",SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNic2NvdWtncnJzbWh2dXZtaHZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU2MjYxNzMsImV4cCI6MjExMTIwMjE3M30.4BRyjHojM0401WCzj0w3g3mJFpjvQtFfLFy2tOqOtl8";
 let sb=null;try{if(/^https?:/.test(SB_URL)&&window.supabase)sb=window.supabase.createClient(SB_URL,SB_KEY)}catch(e){sb=null}
 const TOKEN=(()=>{let t=null;try{t=localStorage.getItem("bingo:token")}catch(e){}if(!t){t=(crypto.randomUUID?crypto.randomUUID():"10000000-1000-4000-8000-100000000000".replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16)));try{localStorage.setItem("bingo:token",t)}catch(e){}}return t})();
 const rpc=async(fn,args)=>{const{data,error}=await sb.rpc(fn,args);if(error)throw error;return data};

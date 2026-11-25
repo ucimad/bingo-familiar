@@ -1,6 +1,6 @@
 -- Bingo Familiar · Nochebuena 2026
--- Pegar entero en Supabase > SQL Editor > New query > Run.
--- Antes de correrlo, cambiá el PIN de administrador (línea marcada abajo).
+-- Ya aplicado en el proyecto Supabase "bingo" (migración bingo_setup).
+-- El PIN real no está en este archivo: se guarda solo en la base.
 
 create table if not exists public.cartones (
   id            int primary key check (id between 1 and 30),
