@@ -216,6 +216,15 @@ h3{font:400 22px "Special Elite",monospace;margin:26px 0 10px;letter-spacing:.03
 .st-libre{color:var(--muted)}.st-ok{color:#3f6b2e;font-weight:700}.st-win{background:var(--red);color:#fff;padding:1px 6px}
 .pact{display:flex;gap:6px;flex-wrap:wrap}.pact button{min-height:36px;padding:4px 10px;font-size:14px}
 .pform{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}.pform input{flex:1 1 120px;min-height:40px}
+#basesTag,#firmaTag,#acceptBox{display:none}
+#v-reglas.mode-bases #basesTag,#v-reglas.mode-firma #firmaTag,#v-reglas.mode-bases #acceptBox{display:inline-block}
+#v-reglas.mode-bases #acceptBox{display:block;margin-top:16px}
+#v-reglas.mode-bases #rulesTag,#v-reglas.mode-bases .rules,#v-reglas.mode-bases .back,#v-reglas.mode-bases #casH,#v-reglas.mode-bases #slips,#v-reglas.mode-bases #signBox,
+#v-reglas.mode-firma #rulesTag,#v-reglas.mode-firma .rules,#v-reglas.mode-firma .back,#v-reglas.mode-firma #casH,#v-reglas.mode-firma #slips,
+#v-reglas.mode-bases .gbar,#v-reglas.mode-firma .gbar,#v-reglas.mode-bases #needSign,#v-reglas.mode-firma #needSign,#v-reglas.mode-bases #paperBox,#v-reglas.mode-firma #paperBox,#v-reglas.mode-bases #paperOk,#v-reglas.mode-firma #paperOk{display:none!important}
+#v-reglas.mode-firma .legal>*:not(#signBox){display:none!important}
+#v-reglas.mode-firma .legal{background:none;border:0;box-shadow:none;padding:0;margin-top:8px}
+#v-reglas.mode-firma #signBox{margin-top:0}
 .banner{background:var(--red);color:#fff;padding:10px 14px;font-size:18px;margin-bottom:14px;border:1.5px solid var(--ink)}
 .foot .fsig{display:flex;align-items:center;gap:6px}
 .foot .fsig img{height:30px;background:#fff;border:1px solid var(--line)}
@@ -235,21 +244,21 @@ h3{font:400 22px "Special Elite",monospace;margin:26px 0 10px;letter-spacing:.03
 </div>
 
 <section id="v-juego">
-  <div class="tag"><b>NOCHEBUENA</b><i>Cada uno con su cartón</i></div>
+  <div class="tag"><b>BINGO FAMILIAR</b><i>Nochebuena 2026</i></div>
 
   <section id="start" class="panel">
     <form id="f">
-      <label for="cid">Número de cartón</label>
+      <label for="cid">Número de cartón <span style="font-size:15px;color:var(--muted)">(está arriba de tu cartón impreso)</span></label>
       <input id="cid" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" placeholder="Ej: 07" style="width:100%;margin-bottom:12px">
       <label for="name">Tu nombre</label>
-      <div class="row">
-        <input id="name" type="text" autocomplete="given-name" placeholder="Tu nombre" maxlength="30" required>
-        <button type="submit">Ver mi cartón</button>
-      </div>
+      <input id="name" type="text" autocomplete="given-name" placeholder="Ej: Tía Marta" maxlength="30" required style="width:100%;margin-bottom:12px">
+      <button type="submit" style="width:100%">Ver mi cartón</button>
       <p class="hint" id="fWho" hidden></p>
       <p class="err" id="fErr" role="alert"></p>
-      <p class="hint">El número está arriba de tu cartón impreso. Si escaneaste el QR, ya viene cargado.</p>
+      <p class="hint" style="text-align:center"><a href="#" id="paperLink" style="color:var(--ink)">Juego solo con el cartón impreso</a></p>
     </form>
+    <h3 style="margin-top:20px">Reglas</h3>
+    <div class="rules" id="loginRules"></div>
   </section>
 
   <section id="play" hidden>
@@ -329,7 +338,9 @@ h3{font:400 22px "Special Elite",monospace;margin:26px 0 10px;letter-spacing:.03
   <div id="paperBox" hidden><button type="button" class="paper" id="paperBtn">Juego solo con el cartón impreso</button></div>
   <div class="hello" id="paperOk" hidden><b>LISTO</b><p>Jugá con tu cartón impreso. Acá abajo tenés las reglas y qué vale en cada casilla, para cuando haya dudas. Si después querés jugar en el celular, escaneá de nuevo el QR.</p></div>
   <div class="gbar" id="gbar">Lectura obligatoria: <span id="gpct">0</span> %<i><b id="gfill"></b></i></div>
-  <div class="tag"><b>CASILLAS Y REGLAS</b><i>Para cuando haya dudas</i></div>
+  <div class="tag" id="rulesTag"><b>CASILLAS Y REGLAS</b><i>Para cuando haya dudas</i></div>
+  <div class="tag" id="basesTag"><b>PRIMERA VEZ</b><i>Leé las bases y aceptalas</i></div>
+  <div class="tag" id="firmaTag"><b>ÚLTIMO PASO</b><i>Firmá tu consentimiento</i></div>
   <div class="rules">
     <div class="rule"><b>REGLA 1</b><p>Cada casilla es algo que puede pasar durante la jornada. El juego arranca cuando recibís tu cartón.</p></div>
     <div class="rule"><b>REGLA 2 · UN CARTÓN</b><p>Solo tenés un cartón registrado a tu nombre. Si completás uno que no es tuyo, jodete.</p></div>
@@ -362,6 +373,8 @@ h3{font:400 22px "Special Elite",monospace;margin:26px 0 10px;letter-spacing:.03
     </ul>
     <p><b>Art. 10. De la jurisdicción.</b> Para cualquier controversia, las partes se someten a la Pirámide: gana el más grande de edad. ¡Feliz Navidad!</p>
 
+    <div id="acceptBox"><button type="button" id="acceptGo" style="width:100%">Acepto las bases y condiciones</button>
+      <button type="button" class="nope" id="sNo2">No acepto</button></div>
     <div class="sign lock" id="signBox">
       <div class="lockmsg"><span id="lockTxt">Seguí leyendo. El consentimiento se desbloquea al llegar al final.</span></div>
       <div id="signForm">
@@ -507,7 +520,7 @@ async function open(id,name){
         if(Array.isArray(r.marks)&&r.marks.length===G*G)store.set(key(id),r.marks)}
     }
   }
-  if(!store.get(fkey(name))){pending={id,name:name.trim()};$("#sName").value=name.trim();showRules();return}
+  if(!store.get(fkey(name))){pending={id,name:name.trim()};$("#sName").value=name.trim();showBases();return}
   const c=cardFor(id),saved=store.get(key(id));
   st={id,name:name.trim(),cells:c.cells,code:c.code,marks:Array.isArray(saved)&&saved.length===G*G?saved:Array(G*G).fill(false)};
   st.cells.forEach((s,i)=>{if(s<0)st.marks[i]=true});
@@ -672,7 +685,7 @@ $("#sGo").addEventListener("click",()=>{
   store.set(fkey(n),{img,fecha});
   if(sb&&pending)rpc("firmar",{p_id:pending.id,p_token:TOKEN,p_firma:img}).catch(()=>{});
   $("#sErr").textContent="";$("#needSign").hidden=true;showSigned(n);
-  if(pending){const p=pending;pending=null;startQuiz(()=>open(p.id,n))}
+  if(pending){const p=pending;pending=null;open(p.id,p.name||n)}
 });
 $("#toCard").addEventListener("click",e=>{e.preventDefault();if(pending){const p=pending;pending=null;open(p.id,p.name)}else showGame()});
 /* quiz en modal, tipo wizard */
@@ -712,7 +725,20 @@ function onScroll(){
   if(maxPct>=100)locked(false);
 }
 addEventListener("scroll",onScroll,{passive:true});
+function showBases(){
+  $("#v-panel").hidden=true;$("#v-juego").hidden=true;$("#v-reglas").hidden=false;
+  $("#v-reglas").classList.remove("mode-firma","gate");$("#v-reglas").classList.add("mode-bases");window.scrollTo(0,0);
+}
+function showFirma(){
+  $("#v-reglas").classList.remove("mode-bases","gate");$("#v-reglas").classList.add("mode-firma");
+  $("#signBox").classList.remove("locked");$("#signForm").hidden=false;$("#signDone").hidden=true;
+  $("#sName").value=pending?pending.name:$("#sName").value;$("#sName").readOnly=!!(pending&&pending.name);
+  window.scrollTo(0,0);requestAnimationFrame(sizePad);
+}
+$("#acceptGo").addEventListener("click",()=>startQuiz(()=>showFirma()));
+$("#sNo2").addEventListener("click",()=>{$("#acceptBox").after($("#shame"));$("#sNo").click()});
 function setGate(on){
+  $("#v-reglas").classList.remove("mode-bases","mode-firma");on=false;
   gating=on;$("#v-reglas").classList.toggle("gate",on);$("#paperBox").hidden=!on;if(on)$("#paperOk").hidden=true;syncHello();
   if(on){maxPct=0;locked(true);onScroll();const id=pending?pad2(pending.id):"";$("#needSign").textContent=(id?"Para ver el cartón N.º "+id+", ":"Para jugar, ")+"primero leé las reglas y las bases, y firmá. Es obligatorio. Lo dice el Art. 1.";$("#needSign").hidden=false}
   else{locked(false);$("#needSign").hidden=true}
@@ -722,8 +748,8 @@ $("#sSpam").addEventListener("change",e=>{$("#spamMsg").textContent=e.target.che
 const SHAME=[["¿Seguro? Tu tía ya firmó y sin chistar.","Sí, no quiero jugar"],["Entonces vas a mirar cómo los demás sellan casillas. Solo. Sin cartón.","Igual no acepto"],["Error 404: persona amargada no encontrada. Volvé a intentarlo.","No acepto, insisto"],["Bueno, no hay opción de no aceptar. Lo dice el Art. 1.","Está bien, firmo"]];
 let shi=0;
 $("#sNo").addEventListener("click",()=>{shi=0;$("#shameTxt").textContent=SHAME[0][0];$("#shNo").textContent=SHAME[0][1];$("#shame").hidden=false});
-$("#shNo").addEventListener("click",()=>{shi++;if(shi>=SHAME.length){$("#shame").hidden=true;$("#sName").scrollIntoView({block:"center"});return}$("#shameTxt").textContent=SHAME[shi][0];$("#shNo").textContent=SHAME[shi][1]});
-$("#shYes").addEventListener("click",()=>{$("#shame").hidden=true;$("#sName").scrollIntoView({block:"center"})});
+$("#shNo").addEventListener("click",()=>{shi++;if(shi>=SHAME.length){$("#shame").hidden=true;return}$("#shameTxt").textContent=SHAME[shi][0];$("#shNo").textContent=SHAME[shi][1]});
+$("#shYes").addEventListener("click",()=>{$("#shame").hidden=true;if($("#v-reglas").classList.contains("mode-bases"))startQuiz(()=>showFirma())});
 
 function syncSign(){$("#sName").readOnly=!!(pending&&pending.name);if(pending){$("#signForm").hidden=false;$("#signDone").hidden=true;requestAnimationFrame(sizePad);return}const n=st?st.name:($("#sName").value||"");if(n&&!$("#sName").value)$("#sName").value=n;if(!(n&&showSigned(n))){$("#signForm").hidden=false;$("#signDone").hidden=true;requestAnimationFrame(sizePad)}}
 
@@ -732,6 +758,7 @@ $("#inapp").hidden=!/WhatsApp|FBAN|FBAV|Instagram|Line\//i.test(navigator.userAg
 $("#paperBtn").addEventListener("click",()=>{pending=null;setGate(false);$("#paperOk").hidden=false;$("#hello").hidden=true;store.set("bingo:papel",true);syncSign();window.scrollTo(0,0)});
 function showRules(target){
   $("#v-panel").hidden=true;
+  if(pending)return showBases();
   $("#v-juego").hidden=true;$("#v-reglas").hidden=false;syncSign();setGate(!!pending);
   document.querySelectorAll(".slip.hl").forEach(x=>x.classList.remove("hl"));
   const el=target&&document.getElementById(target);
@@ -744,7 +771,7 @@ function showStartFor(id,name,err){
   ($("#name").value?$("#f button[type=submit]"):$("#name")).focus();
 }
 function showGame(){$("#v-panel").hidden=true;
-  if(pending)return showRules();
+  if(pending)return showBases();
   setGate(false);$("#v-reglas").hidden=true;$("#v-juego").hidden=false;
   if(st){$("#start").hidden=true;$("#play").hidden=false}
   else{const l=store.get("bingo:last");if(l&&l.id&&l.name&&store.get(fkey(l.name)))return open(l.id,l.name);$("#play").hidden=true;$("#start").hidden=false}
@@ -834,6 +861,8 @@ $("#bulkGo").addEventListener("click",async()=>{
   $("#bulkMsg").textContent=`Asigné ${ok}.`+(skip.length?` Salteé los ya registrados: ${skip.join(", ")}.`:"")+(bad.length?` No entendí: ${bad.join(" / ")}.`:"");
   if(ok)$("#bulk").value="";loadPanel();
 });
+$("#loginRules").innerHTML=$("#v-reglas .rules").innerHTML;
+$("#paperLink").addEventListener("click",e=>{e.preventDefault();e.stopPropagation();pending=null;setGate(false);showRules();$("#paperOk").hidden=false;window.scrollTo(0,0)});
 let handled=null;
 function route(){
   if(location.hash===handled)return;handled=location.hash;
