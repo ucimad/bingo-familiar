@@ -197,6 +197,17 @@ h3{font:400 22px "Special Elite",monospace;margin:26px 0 10px;letter-spacing:.03
 .paper{margin-top:10px;background:#fff;color:var(--ink);border:1.5px solid var(--ink);font-size:15px;min-height:44px;padding:8px 12px}
 #hello{display:none!important}
 .busy{opacity:.6;pointer-events:none}
+.psmall{min-height:36px!important;padding:4px 10px!important;font-size:14px!important}
+.rank{display:grid;gap:8px}.rank .ri{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:8px;align-items:center}
+.rank .bar{height:10px;background:#e4ddcc;margin-top:4px}.rank .bar i{display:block;height:100%;background:var(--red)}
+.vgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-top:10px}
+.vgrid div{border:1.5px solid #8f8b80;background:#fffdf6;font:600 12px/1.15 "Roboto Slab",serif;padding:5px 3px;text-align:center;min-height:56px;display:flex;align-items:center;justify-content:center;overflow-wrap:anywhere}
+.vgrid div.on{background:var(--red);color:#fff;border-color:var(--red)}.vgrid div.win{outline:4px solid #e9b23a;outline-offset:-4px}
+#v-panel select{font:16px "Courier Prime",monospace;min-height:44px;padding:6px 10px;border:1.5px solid var(--line);background:#fff;color:var(--ink)}
+.feed{list-style:none;margin:0;padding:0}.feed li{padding:6px 0;border-bottom:1px dashed var(--line);font-size:16px}.feed time{color:var(--muted);font:13px "Courier Prime",monospace;margin-right:6px}
+.tool{display:grid;gap:4px;padding:8px 0;border-bottom:1px dashed var(--line)}.tool b{font:400 15px "Special Elite",monospace}
+.tool code{font:13px "Courier Prime",monospace;background:#fff;border:1px solid var(--line);padding:4px 6px;overflow-wrap:anywhere}
+.tool .row{gap:6px}
 .ptable{width:100%;border-collapse:collapse;font-size:15px;background:var(--paper)}
 .ptable th,.ptable td{border-bottom:1.5px solid var(--line);padding:8px 6px;text-align:left;vertical-align:middle}
 .ptable th{font:400 14px "Special Elite",monospace}
@@ -280,9 +291,35 @@ h3{font:400 22px "Special Elite",monospace;margin:26px 0 10px;letter-spacing:.03
   </div>
   <div id="pBody" hidden>
     <div class="status" id="pSum"></div>
-    <p class="hint" style="color:#36352f">Se actualiza solo cada 10 segundos. <button type="button" class="ghost" id="pRef" style="min-height:36px;padding:4px 10px;font-size:14px">Actualizar ahora</button></p>
+    <p class="hint" style="color:#36352f">Se actualiza solo cada 10 segundos. <button type="button" class="ghost psmall" id="pRef">Actualizar ahora</button></p>
+
+    <h3>Quién va más cerca</h3>
+    <div class="panel" id="pRank"></div>
+
+    <h3>Verificar un cartón</h3>
+    <div class="panel">
+      <p class="hint" style="margin-top:0">Para cuando alguien canta línea o bingo: elegí su número y mirá qué selló.</p>
+      <div class="row"><select id="vSel" aria-label="Número de cartón a verificar"></select></div>
+      <div id="vOut"></div>
+    </div>
+
+    <h3>Actividad reciente</h3>
+    <div class="panel" id="pFeed"></div>
+
+    <h3>Todos los cartones</h3>
     <div class="panel" style="padding:8px;overflow-x:auto"><table class="ptable"><thead><tr><th>N.º</th><th>Jugador</th><th>Estado</th><th>Sellos</th><th></th></tr></thead><tbody id="pRows"></tbody></table></div>
     <p class="err" id="pErr" role="status"></p>
+
+    <h3>Asignar varios de una vez</h3>
+    <div class="panel">
+      <p class="hint" style="margin-top:0">Un cartón por renglón, con el número y el nombre. Solo asigna cartones que nadie registró todavía.</p>
+      <textarea id="bulk" rows="6" placeholder="01 Tía Marta&#10;02 Juan&#10;03 Abuela Nelly" style="width:100%;font:16px 'Courier Prime',monospace;padding:10px;border:1.5px solid var(--line)"></textarea>
+      <div class="row" style="margin-top:8px"><button type="button" id="bulkGo">Asignar</button></div>
+      <p class="err" id="bulkMsg" role="status"></p>
+    </div>
+
+    <h3>Links y mensajes</h3>
+    <div class="panel" id="pTools"></div>
   </div>
   <a class="btn ghost back" href="#">Volver al juego</a>
 </section>
@@ -724,7 +761,7 @@ try{pin=sessionStorage.getItem("bingo:pin")}catch(e){}
 function showPanel(){
   setGate(false);$("#v-juego").hidden=true;$("#v-reglas").hidden=true;$("#v-panel").hidden=false;window.scrollTo(0,0);
   if(!sb){$("#pinBox").hidden=false;$("#pBody").hidden=true;$("#pinErr").textContent="Falta conectar la base de datos (SB_URL y SB_KEY).";return}
-  if(pin){$("#pinBox").hidden=true;$("#pBody").hidden=false;loadPanel();clearInterval(pTimer);pTimer=setInterval(()=>{if(!$("#v-panel").hidden&&pEdit===null)loadPanel()},10000)}
+  if(pin){$("#pinBox").hidden=true;$("#pBody").hidden=false;renderTools();loadPanel();clearInterval(pTimer);pTimer=setInterval(()=>{if(!$("#v-panel").hidden&&pEdit===null)loadPanel()},10000)}
   else{$("#pinBox").hidden=false;$("#pBody").hidden=true;$("#pin").focus()}
 }
 $("#pinGo").addEventListener("click",async()=>{const v=$("#pin").value.trim();if(!v){$("#pinErr").textContent="Poné el PIN.";return}
@@ -737,14 +774,16 @@ async function loadPanel(){
   $("#pErr").textContent="";
   const reg=pRows.filter(r=>r.registrado).length,fir=pRows.filter(r=>r.firmado).length,lin=pRows.filter(r=>r.lineas>0).length,ful=pRows.filter(r=>r.lleno);
   $("#pSum").innerHTML=`<span class="pill">${reg} ${reg===1?"registrado":"registrados"}</span><span class="pill">${fir} ${fir===1?"firmó":"firmaron"}</span><span class="pill${lin?" hot":""}">${lin} con línea</span>`+(ful.length?`<span class="pill hot">¡BINGO! ${ful.map(r=>esc(r.nombre||"N.º "+pad2(r.id))).join(", ")}</span>`:"");
+  renderRank();renderFeed();renderVerify();
   $("#pRows").innerHTML=pRows.map(r=>{
     const m=Array.isArray(r.marks)?r.marks:[],n=m.filter(Boolean).length;
     const est=r.lleno?'<span class="st-win">¡BINGO!</span>':r.lineas>0?`<span class="st-win">${r.lineas===1?"1 línea":r.lineas+" líneas"}</span>`:r.firmado?'<span class="st-ok">Firmó</span>':r.registrado?"Registrado":r.nombre?"Asignado":'<span class="st-libre">Libre</span>';
-    const edit=pEdit===r.id?`<div class="pform"><input id="pName" value="${esc(r.nombre||"")}" placeholder="Nombre" aria-label="Nombre para el cartón ${pad2(r.id)}"><button type="button" data-a="save" data-id="${r.id}">Guardar</button><button type="button" class="ghost" data-a="cancel">Cancelar</button></div>`:"";
-    return `<tr><td class="n">${pad2(r.id)}</td><td>${esc(r.nombre||"—")}${edit}</td><td>${est}</td><td><div class="mini" title="${n} de 16">${Array.from({length:16},(_,k)=>`<i class="${m[k]?"on":""}"></i>`).join("")}</div></td>
+    const edit=pEdit===r.id?`<div class="pform"><input id="pName" value="${esc(r.nombre||"")}" placeholder="Nombre" aria-label="Nombre para el cartón ${pad2(r.id)}"><button type="button" data-a="save" data-id="${r.id}">Guardar</button><button type="button" class="ghost" data-a="cancel">Cancelar</button></div>${r.registrado?'<p class="err" style="margin:4px 0 0">Ojo: ya está registrado. Si guardás, se borran su firma y sus sellos.</p>':""}`:"";
+    return `<tr><td class="n">${pad2(r.id)}</td><td>${esc(r.nombre||"—")}${edit}</td><td>${est}</td><td><div class="mini" title="${n} de 16" data-v="${r.id}" style="cursor:pointer">${Array.from({length:16},(_,k)=>`<i class="${m[k]?"on":""}"></i>`).join("")}</div></td>
       <td><div class="pact"><button type="button" class="ghost" data-a="edit" data-id="${r.id}">${r.nombre?"Cambiar":"Asignar"}</button>${r.nombre?`<button type="button" class="ghost" data-a="free" data-id="${r.id}">Liberar</button>`:""}</div></td></tr>`}).join("");
 }
 $("#pRows").addEventListener("click",async e=>{
+  const mv=e.target.closest("[data-v]");if(mv){$("#vSel").value=mv.dataset.v;renderVerify();$("#vSel").scrollIntoView({block:"center"});return}
   const b=e.target.closest("button");if(!b)return;const a=b.dataset.a,id=+b.dataset.id;
   if(a==="edit"){pEdit=id;loadPanel().then(()=>{const i=$("#pName");i&&i.focus()});return}
   if(a==="cancel"){pEdit=null;loadPanel();return}
@@ -753,6 +792,47 @@ $("#pRows").addEventListener("click",async e=>{
   if(a==="save"){const v=$("#pName").value.trim();
     try{const ok=await rpc("admin_asignar",{p_pin:pin,p_id:id,p_nombre:v});if(!ok)$("#pErr").textContent="PIN vencido: volvé a entrar."}catch(err){$("#pErr").textContent="No se pudo guardar."}
     pEdit=null;loadPanel()}
+});
+const BASE_URL=location.origin+location.pathname;
+const cnt=r=>(Array.isArray(r.marks)?r.marks:[]).filter(Boolean).length;
+const ago=t=>{if(!t)return"";const m=Math.round((Date.now()-new Date(t))/60000);return m<1?"recién":m<60?`hace ${m} min`:m<1440?`hace ${Math.round(m/60)} h`:new Date(t).toLocaleDateString("es-AR",{day:"numeric",month:"short"})};
+function renderRank(){
+  const top=pRows.filter(r=>r.registrado).sort((a,b)=>(b.lleno-a.lleno)||(b.lineas-a.lineas)||(cnt(b)-cnt(a))).slice(0,6);
+  $("#pRank").innerHTML=top.length?`<div class="rank">${top.map((r,k)=>`<div class="ri"><b class="n" style="font:700 16px 'Courier Prime',monospace;color:var(--red)">${pad2(r.id)}</b><div>${esc(r.nombre)}${r.lleno?' <span class="st-win">¡BINGO!</span>':r.lineas?` <span class="st-win">${r.lineas===1?"1 línea":r.lineas+" líneas"}</span>`:""}<div class="bar"><i style="width:${cnt(r)/16*100}%"></i></div></div><span>${cnt(r)}/16</span></div>`).join("")}</div>`:'<p class="hint" style="margin:0">Todavía nadie selló nada.</p>';
+}
+function renderFeed(){
+  const ev=pRows.filter(r=>r.registrado).sort((a,b)=>new Date(b.updated_at)-new Date(a.updated_at)).slice(0,8);
+  $("#pFeed").innerHTML=ev.length?`<ul class="feed">${ev.map(r=>`<li><time>${ago(r.updated_at)}</time><b>${esc(r.nombre)}</b> (N.º ${pad2(r.id)}): ${r.lleno?"¡hizo BINGO!":r.lineas?"tiene "+(r.lineas===1?"1 línea":r.lineas+" líneas"):cnt(r)?cnt(r)+" casillas selladas":r.firmado?"firmó las bases":"se registró"}</li>`).join("")}</ul>`:'<p class="hint" style="margin:0">Sin movimiento todavía.</p>';
+}
+function renderVerify(){
+  const sel=$("#vSel");if(!sel.options.length)sel.innerHTML=CARDS.map((_,i)=>`<option value="${i+1}">Cartón N.º ${pad2(i+1)}</option>`).join("");
+  const id=+sel.value||1,r=pRows.find(x=>x.id===id),m=r&&Array.isArray(r.marks)?r.marks:[],cells=CARDS[id-1];
+  const won=LINES.filter(L=>L.every(k=>m[k])),wc=new Set(won.flat());
+  $("#vOut").innerHTML=`<p style="margin:10px 0 0;font-size:17px"><b>${r&&r.nombre?esc(r.nombre):"Sin asignar"}</b> · ${m.filter(Boolean).length} de 16 selladas · ${won.length?`<span class="st-win">${won.length===1?"1 línea":won.length+" líneas"}</span>`:"sin líneas"}${m.length&&m.every(Boolean)?' <span class="st-win">¡BINGO!</span>':""}</p>
+   <div class="vgrid">${cells.map((s,k)=>`<div class="${m[k]?"on":""}${wc.has(k)?" win":""}">${esc(SIT[s].c)}</div>`).join("")}</div>
+   <p class="hint">Las casillas en rojo están selladas. Las que tienen borde dorado forman la línea.</p>`;
+}
+$("#vSel").addEventListener("change",renderVerify);
+async function copyTxt(t,btn){try{await navigator.clipboard.writeText(t)}catch(e){const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy")}catch(_){}ta.remove()}
+  const o=btn.textContent;btn.textContent="Copiado";setTimeout(()=>btn.textContent=o,1500)}
+function renderTools(){
+  const wa=`🎄 ¡Llegó el Bingo Familiar de Nochebuena! El 24 cada uno recibe su cartón impreso. Si querés jugar también desde el celular, escaneá el QR de tu cartón o entrá acá y poné tu número: ${BASE_URL}`;
+  const T=[["Link del juego (para compartir)",BASE_URL],["Mensaje para el grupo de WhatsApp",wa],["Este panel (solo para vos)",BASE_URL+"#panel"],["Reiniciar un celular (solo para vos)",BASE_URL+"#reset-uciel"]];
+  $("#pTools").innerHTML=T.map(([t,v],k)=>`<div class="tool"><b>${t}</b><code>${esc(v)}</code><div class="row"><button type="button" class="ghost psmall" data-copy="${k}">Copiar</button>${/^https?:/.test(v)?`<a class="btn ghost psmall" href="${esc(v)}" target="_blank" rel="noopener">Abrir</a>`:""}</div></div>`).join("")+
+   `<div class="tool"><b>Link de un cartón puntual</b><div class="row"><select id="tSel" aria-label="Cartón">${CARDS.map((_,i)=>`<option value="${i+1}">N.º ${pad2(i+1)}</option>`).join("")}</select><button type="button" class="ghost psmall" id="tCopy">Copiar link</button></div><code id="tLink">${esc(BASE_URL+"#carton-01")}</code></div>`+
+   `<div class="tool"><b>Cartones para imprimir</b><div class="row"><a class="btn ghost psmall" href="cartones.pdf" target="_blank" rel="noopener">Abrir el PDF</a></div></div>`;
+  $("#pTools").onclick=e=>{const b=e.target.closest("[data-copy]");if(b)copyTxt(T[+b.dataset.copy][1],b)};
+  $("#tSel").onchange=()=>{$("#tLink").textContent=BASE_URL+"#carton-"+pad2(+$("#tSel").value)};
+  $("#tCopy").onclick=e=>copyTxt($("#tLink").textContent,e.target);
+}
+$("#bulkGo").addEventListener("click",async()=>{
+  const lines=$("#bulk").value.split(/\n/).map(x=>x.trim()).filter(Boolean);let ok=0,skip=[],bad=[];
+  for(const l of lines){const m=l.match(/^(\d{1,2})\s*[-:.)]?\s*(.+)$/);if(!m){bad.push(l);continue}
+    const id=+m[1],nm=m[2].trim(),r=pRows.find(x=>x.id===id);if(!r||id<1||id>CARDS.length){bad.push(l);continue}
+    if(r.registrado){skip.push(pad2(id));continue}
+    try{if(await rpc("admin_asignar",{p_pin:pin,p_id:id,p_nombre:nm}))ok++;else bad.push(l)}catch(e){bad.push(l)}}
+  $("#bulkMsg").textContent=`Asigné ${ok}.`+(skip.length?` Salteé los ya registrados: ${skip.join(", ")}.`:"")+(bad.length?` No entendí: ${bad.join(" / ")}.`:"");
+  if(ok)$("#bulk").value="";loadPanel();
 });
 let handled=null;
 function route(){
