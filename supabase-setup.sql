@@ -33,10 +33,15 @@ revoke all on public.config   from anon, authenticated;
 -- Vale si está libre, si es el mismo celular, o si el nombre coincide con el asignado.
 create or replace function public.registrar(p_id int, p_nombre text, p_token uuid)
 returns json language plpgsql security definer set search_path = public as $$
-declare r public.cartones;
+declare r public.cartones; otro public.cartones;
 begin
   if coalesce(trim(p_nombre), '') = '' then
     return json_build_object('ok', false, 'error', 'sin_nombre');
+  end if;
+  -- un cartón por celular (el admin lo libera desde el panel)
+  select * into otro from public.cartones where token = p_token and id <> p_id limit 1;
+  if found then
+    return json_build_object('ok', false, 'error', 'otro_carton', 'id', otro.id, 'nombre', otro.nombre);
   end if;
   select * into r from public.cartones where id = p_id for update;
   if not found then

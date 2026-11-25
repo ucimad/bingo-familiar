@@ -535,7 +535,7 @@ async function open(id,name){
       document.body.classList.add("busy");let r;
       try{r=await rpc("registrar",{p_id:id,p_nombre:name.trim(),p_token:TOKEN})}catch(e){r={ok:null}}
       document.body.classList.remove("busy");
-      if(r&&r.ok===false){showStartFor(id,name,r.error==="tomado"?`El cartón ${pad2(id)} ya está registrado a nombre de ${r.nombre}. Si sos vos, escribí tu nombre igual que como figura ahí.`:"No se pudo registrar el cartón. Probá de nuevo.");return}
+      if(r&&r.ok===false){showStartFor(id,name,r.error==="otro_carton"?`Este celular ya tiene el cartón ${pad2(r.id)} (${r.nombre}). Solo se puede uno por persona. Si completás uno que no es tuyo, jodete. Si es un error, pedile a Uciel que lo libere.`:r.error==="tomado"?`El cartón ${pad2(id)} ya está registrado a nombre de ${r.nombre}. Si sos vos, escribí tu nombre igual que como figura ahí.`:"No se pudo registrar el cartón. Probá de nuevo.");return}
       if(r&&r.ok){name=r.nombre;store.set("bingo:claim",{id,name});
         if(r.firmado&&!store.get(fkey(name)))store.set(fkey(name),{img:"",fecha:""});
         if(Array.isArray(r.marks)&&r.marks.length===G*G)store.set(key(id),r.marks)}
