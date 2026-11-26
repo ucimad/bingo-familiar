@@ -3,7 +3,7 @@
 -- El PIN real no está en este archivo: se guarda solo en la base.
 
 create table if not exists public.cartones (
-  id            int primary key check (id between 1 and 30),
+  id            int primary key check (id between 1 and 36),
   nombre        text,
   token         uuid,
   registrado_at timestamptz,
@@ -16,7 +16,7 @@ create table if not exists public.cartones (
 );
 
 insert into public.cartones (id)
-select g from generate_series(1, 30) g
+select g from generate_series(1, 36) g
 on conflict (id) do nothing;
 
 create table if not exists public.config (k text primary key, v text not null);
