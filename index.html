@@ -66,7 +66,7 @@ padding:3px;font:600 13px/1.1 "Roboto Slab",Georgia,serif;letter-spacing:-.01em;
 .foot .leg{display:flex;align-items:center;gap:6px;margin-top:4px}.foot .leg svg{width:16px;height:14px;flex:none}
 .cell svg.st{position:absolute;inset:6%;width:88%;height:88%;z-index:2;opacity:0;transform:scale(1.5) rotate(var(--r,0deg));transition:transform .2s;mix-blend-mode:multiply;pointer-events:none}
 .cell.on svg.st{opacity:.78;transform:scale(1) rotate(var(--r,0deg))}
-.cell.on span{color:#7a6f66}
+.cell.on span{color:#5c534c}
 .cell.win{background:rgba(184,38,44,.07)}
 .cell.free{background:#fff3d6;cursor:default;flex-direction:column;gap:2px;font:400 11px "Special Elite",monospace;color:var(--red)}
 .cell.free svg{width:62%;height:auto}
@@ -233,6 +233,14 @@ h3{font:400 22px "Special Elite",monospace;margin:26px 0 10px;letter-spacing:.03
 
 /* Navidad: guirnalda + papel de regalo */
 #shareBtn{background:#3c6b3f;border-color:#fbf6ec}
+/* textos sobre el fondo rojo: etiqueta de papel */
+#casH,#v-panel #pBody>h3,.onred{display:table;background:#fbf6ec;color:#36352f!important;padding:5px 12px 4px;box-shadow:2px 3px 0 rgba(0,0,0,.22);transform:rotate(-1deg)}
+#v-panel #pBody>h3{margin-top:26px}
+.onred{font-size:16px;padding:6px 12px}
+.status.incard{margin:8px 0 0}
+.status.incard .pill:not(.hot){background:#fff}
+.foot>div{flex:1}
+
 .cutout{margin:6px 0 18px;text-align:center;line-height:1}
 .cutout .cw{display:block;white-space:nowrap;margin:4px 0}
 .cutout .cw span{display:inline-block;font:400 34px/1 "Special Elite",monospace;padding:6px 7px 3px;margin:0 1px;color:#fbf6ec;background:#3c6b3f;box-shadow:2px 3px 0 rgba(0,0,0,.28);clip-path:polygon(3% 0,97% 4%,100% 96%,2% 100%)}
@@ -288,14 +296,11 @@ body{background-color:#a82229;background-image:url("data:image/svg+xml,%3Csvg%20
       <h2 id="ttl">BINGO FAMILIAR</h2>
       <div class="who"><span>Jugador: <b id="pname"></b></span><span>Cartón N.º <b id="code"></b></span></div>
       <div class="grid" id="grid"></div>
-      <div class="foot"><div>Tocá para ver <a href="#reglas">qué cuenta en cada casilla y las reglas</a>.<div class="fsig" id="fsig" hidden>Bases firmadas <img id="fImg" alt="Tu firma"></div></div></div>
+      <div class="foot"><div>Tocá para ver <a href="#reglas">qué cuenta en cada casilla y las reglas</a>.<div class="fsig" id="fsig" hidden>Bases firmadas <img id="fImg" alt="Tu firma"></div><div class="status incard" id="status" aria-live="polite"></div></div></div>
     </div>
-    <div class="status" id="status"></div>
     <div class="last cap" aria-live="polite" style="text-align:left"><small>Última casilla sellada</small><p id="lastTxt">Todavía nada. Atentos a todo lo que pase.</p><a id="lastLink" href="#reglas" hidden>¿Qué cuenta en esta casilla?</a></div>
     <div class="row" style="margin-top:14px">
       <button id="shareBtn" type="button">Compartir mi tablero</button>
-      <button class="ghost" id="reset" type="button">Desmarcar todo</button>
-      <button class="ghost" id="change" type="button">Cambiar de cartón</button>
     </div>
     <div id="shareBox" class="panel" hidden style="margin-top:12px">
       <p style="margin:0 0 10px;font-size:19px" id="shareMsg">Armando la imagen…</p>
@@ -321,7 +326,7 @@ body{background-color:#a82229;background-image:url("data:image/svg+xml,%3Csvg%20
   </div>
   <div id="pBody" hidden>
     <div class="status" id="pSum"></div>
-    <p class="hint" style="color:#36352f">Se actualiza solo cada 10 segundos. <button type="button" class="ghost psmall" id="pRef">Actualizar ahora</button></p>
+    <p class="hint onred">Se actualiza solo cada 10 segundos. <button type="button" class="ghost psmall" id="pRef">Actualizar ahora</button></p>
 
     <h3>Quién va más cerca</h3>
     <div class="panel" id="pRank"></div>
@@ -369,7 +374,7 @@ body{background-color:#a82229;background-image:url("data:image/svg+xml,%3Csvg%20
     <div class="rule"><b>REGLA 4</b><p>No vale provocar una situación ni hacerla a propósito para sellar esa casilla.</p></div>
     <div class="rule"><b>REGLA 5</b><p>Una misma situación puede sellar dos casillas.</p></div>
     <div class="rule"><b>REGLA 6 · LA U.C.I.E.L.</b><p>Todo sellado se justifica ante la U.C.I.E.L. (Unidad Central de Inspección de Estampados Lícitos). Sin justificación, el sello no cuenta. Sus fallos son inapelables.</p></div>
-    <div class="rule"><b>REGLA 7 · PREMIOS</b><p>Cuatro seguidas en fila, columna o diagonal: cantás "¡Línea!" en voz alta y ganás el premio menor. Todo el cartón sellado: cantás "¡Bingo!" y ganás el premio mayor.</p></div>
+    <div class="rule"><b>REGLA 7 · PREMIOS</b><p>Cuatro seguidas en fila, columna o diagonal: cantás "¡Línea!" en voz alta y ganás el premio menor. Cada cartón canta una sola línea. Todo el cartón sellado: cantás "¡Bingo!" y ganás el premio mayor.</p></div>
     <div class="rule"><b>REGLA 8 · FINAL</b><p>El juego termina cuando hay una línea y un bingo. Si al final de la jornada nadie hizo bingo, gana el premio mayor quien tenga más casillas selladas.</p></div>
     <div class="rule"><b>LA PIRÁMIDE</b><p>Si dos cantan a la vez, o hay empate en casillas selladas, se aplica la pirámide: gana el más grande de edad.</p></div>
     <div class="rule"><b>SI HAY DUDA</b><p>Fijate abajo qué vale en cada casilla. Si igual no queda claro, decide la U.C.I.E.L.</p></div>
@@ -587,7 +592,7 @@ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitCells);
 function status(w){
   const n=st.cells.filter((s,i)=>s>=0&&st.marks[i]).length,tot=st.cells.filter(s=>s>=0).length;
   $("#status").innerHTML=`<span class="pill">${n} de ${tot} selladas</span>`+
-    (w.count?`<span class="pill hot">${w.count===1?"1 línea":w.count+" líneas"}</span>`:"")+(w.full?`<span class="pill hot">¡Cartón lleno!</span>`:"");
+    (w.count&&!w.full?`<span class="pill hot">¡Línea!</span>`:"")+(w.full?`<span class="pill hot">¡Cartón lleno!</span>`:"");
 }
 let bt;function bubble(m){const b=$("#bubble");b.textContent=m;b.classList.add("show");clearTimeout(bt);bt=setTimeout(()=>b.classList.remove("show"),2800)}
 
@@ -607,8 +612,8 @@ function toggleCell(i){
   if(st.marks[i]){$("#lastTxt").textContent=SIT[s].t;const l=$("#lastLink");l.href="#casilla-"+(s+1);l.hidden=false}
   const was=k=>k===i?!st.marks[i]:st.marks[k],prev=new Set(LINES.filter(L=>L.every(was)).map(String));
   const w=update(i);
-  if(w.full&&!st.full){bubble("¡BINGO!");confetti(120)}else if(w.count>st.lines){bubble("¡LÍNEA!");confetti(60)}
-  if(w.count>st.lines){
+  if(w.full&&!st.full){bubble("¡BINGO!");confetti(120)}else if(w.count&&!st.lines){bubble("¡LÍNEA!");confetti(60)}
+  if(w.count&&!st.lines){
     LINES.filter(L=>L.every(k=>st.marks[k])&&!prev.has(String(L))).forEach(L=>L.forEach((k,n)=>{const c=document.querySelector(`#grid .cell:nth-child(${k+1})`);if(c){c.style.setProperty("--k",n);c.classList.remove("hop");void c.offsetWidth;c.classList.add("hop")}}));
   }
   st.lines=w.count;st.full=w.full;syncMarks();
@@ -619,10 +624,10 @@ $("#f").addEventListener("submit",e=>{e.preventDefault();
   if(!(id>=1&&id<=CARDS.length)){$("#fErr").textContent="Poné el número de tu cartón, del 01 al "+pad2(CARDS.length)+".";return}
   if(!norm(n)){$("#fErr").textContent="Poné tu nombre.";return}
   $("#fErr").textContent="";if(location.hash)history.replaceState(null,"",location.pathname+location.search);open(id,n)});
-$("#change").addEventListener("click",()=>{$("#play").hidden=true;$("#start").hidden=false;$("#confirm").hidden=true;$("#cid").value="";$("#cid").focus()});
-$("#reset").addEventListener("click",()=>{$("#confirm").hidden=false});
-$("#no").addEventListener("click",()=>{$("#confirm").hidden=true});
-$("#yes").addEventListener("click",()=>{st.marks=st.cells.map(s=>s<0);st.lines=0;st.full=false;store.set(key(st.id),st.marks);syncMarks();$("#confirm").hidden=true;$("#lastTxt").textContent="Todavía nada. Atentos a todo lo que pase.";$("#lastLink").hidden=true;render()});
+$("#change")?.addEventListener("click",()=>{$("#play").hidden=true;$("#start").hidden=false;$("#confirm").hidden=true;$("#cid").value="";$("#cid").focus()});
+$("#reset")?.addEventListener("click",()=>{$("#confirm").hidden=false});
+$("#no")?.addEventListener("click",()=>{$("#confirm").hidden=true});
+$("#yes")?.addEventListener("click",()=>{st.marks=st.cells.map(s=>s<0);st.lines=0;st.full=false;store.set(key(st.id),st.marks);syncMarks();$("#confirm").hidden=true;$("#lastTxt").textContent="Todavía nada. Atentos a todo lo que pase.";$("#lastLink").hidden=true;render()});
 
 $("#slips").innerHTML=SIT.map((s,i)=>`<li class="slip" id="casilla-${i+1}"><h4><span>${i+1}</span>${s.d?"Alguien dice: “"+esc(s.c)+"”":esc(s.c)}</h4><p>${esc(s.t)}.</p><p class="ok">${esc(s.v)}</p>${s.n?`<p class="no">${esc(s.n)}</p>`:""}</li>`).join("");
 
@@ -668,7 +673,7 @@ async function drawBoard(){
     if(st.marks[i]){x.rotate(((hash(st.code+i)%41)-20)*Math.PI/180);x.globalAlpha=.8;x.globalCompositeOperation="multiply";x.strokeStyle="#b8262c";x.lineWidth=9;x.beginPath();x.arc(0,0,cs*.42,0,7);x.stroke();x.lineWidth=3;x.beginPath();x.arc(0,0,cs*.34,0,7);x.stroke();star(x,0,0,cs*.24,cs*.1);x.fillStyle="#b8262c";x.fill()}
     x.restore()});
   const n=st.cells.filter((sx,i)=>sx>=0&&st.marks[i]).length,tot=st.cells.filter(sx=>sx>=0).length;
-  const msg=`${n} de ${tot} selladas`+(w.count?` · ${w.count===1?"1 línea":w.count+" líneas"}`:"")+(w.full?" · ¡BINGO!":"");
+  const msg=`${n} de ${tot} selladas`+(w.count&&!w.full?" · Línea":"")+(w.full?" · ¡BINGO!":"");
   x.font='400 44px "Patrick Hand",sans-serif';const mw=x.measureText(msg).width+60;x.fillStyle="#fff";x.strokeStyle="#cfcab9";x.lineWidth=3;x.fillRect((W-mw)/2,H-180,mw,76);x.strokeRect((W-mw)/2,H-180,mw,76);
   x.fillStyle="#36352f";x.textAlign="center";x.textBaseline="middle";x.fillText(msg,W/2,H-141);
   return new Promise(res=>c.toBlob(res,"image/png"));
