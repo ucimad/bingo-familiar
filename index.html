@@ -525,7 +525,7 @@ g.innerHTML=`<svg preserveAspectRatio="none">${Array.from({length:n-1},(_,i)=>{c
 {const t=$("#ttl");t.innerHTML=[...t.textContent].map((ch,i)=>ch===" "?" ":`<span style="animation-delay:${i*45}ms">${ch}</span>`).join("")}
 {const sn=$("#snow");sn.innerHTML=Array.from({length:18},(_,i)=>`<i style="left:${(i*53)%100}%;--s:${4+i%4*2}px;--t:${9+i%5*3}s;--dl:-${(i*1.7)%12}s;--dx:${(i%2?1:-1)*(20+i%3*15)}px"></i>`).join("")}
 // Santa animation when a line or a bingo is made (transparent WebP + sound).
-const FX={linea:{img:"fx/santa-linea.webp",snd:"fx/santa-linea.mp3",ms:4000},bingo:{img:"fx/santa-bingo.webp",snd:"fx/santa-bingo.mp3",ms:5000}};
+const FX={linea:{img:"fx/santa-linea.webp",snd:"fx/santa-linea.mp3",ms:4000},bingo:{img:"fx/santa-bingo.webp",snd:"fx/santa-bingo.mp3",ms:9000}};
 const fxBlob={},fxAudio={};let fxT=null;
 function fxPreload(){for(const k in FX){if(!fxBlob[k])fxBlob[k]=fetch(FX[k].img).then(r=>r.ok?r.blob():null).catch(()=>null);if(!fxAudio[k]){const a=new Audio(FX[k].snd);a.preload="auto";fxAudio[k]=a}}}
 async function playFx(k,msg,n){
