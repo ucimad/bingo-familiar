@@ -259,6 +259,12 @@ body{border-top-width:0}
 .tag b{color:#b8262c}
 .panel{background:linear-gradient(var(--paper),var(--paper)) padding-box,repeating-linear-gradient(-45deg,#b8262c 0 10px,#fff 10px 20px,#3c6b3f 20px 30px,#fff 30px 40px) border-box;border:6px solid transparent}
 body{background-color:#a82229;background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22120%22%20height%3D%22120%22%3E%3Cg%20transform%3D%22translate%2810%208%29%20scale%280.9%29%22%3E%3Cpath%20d%3D%22M20%200L34%2022H27L38%2038H24V46H16V38H2L13%2022H6Z%22%20fill%3D%22%23f6efe2%22%20stroke%3D%22rgba%280%2C0%2C0%2C.18%29%22%20stroke-width%3D%221%22/%3E%3C/g%3E%3Cg%20transform%3D%22translate%2878%2020%29%20scale%281%29%22%3E%3Cpath%20d%3D%22M10%201l2.6%206%206.4.6-4.9%204.2%201.5%206.3L10%2014.8%204.4%2018.1l1.5-6.3L1%207.6l6.4-.6z%22%20fill%3D%22%23e9b23a%22/%3E%3C/g%3E%3Cg%20transform%3D%22translate%2820%2078%29%20scale%280.8%29%22%3E%3Cpath%20d%3D%22M10%201l2.6%206%206.4.6-4.9%204.2%201.5%206.3L10%2014.8%204.4%2018.1l1.5-6.3L1%207.6l6.4-.6z%22%20fill%3D%22%23f6efe2%22/%3E%3C/g%3E%3Cg%20transform%3D%22translate%2870%2064%29%20scale%280.9%29%22%3E%3Cpath%20d%3D%22M20%200L34%2022H27L38%2038H24V46H16V38H2L13%2022H6Z%22%20fill%3D%22%23f6efe2%22%20stroke%3D%22rgba%280%2C0%2C0%2C.18%29%22%20stroke-width%3D%221%22/%3E%3C/g%3E%3Cg%20fill%3D%22%23e9b23a%22%3E%3Ccircle%20cx%3D%2260%22%20cy%3D%2255%22%20r%3D%222.5%22/%3E%3Ccircle%20cx%3D%22110%22%20cy%3D%22105%22%20r%3D%222%22/%3E%3Ccircle%20cx%3D%225%22%20cy%3D%2260%22%20r%3D%222%22/%3E%3C/g%3E%3C/svg%3E"),repeating-linear-gradient(45deg,rgba(255,255,255,.05) 0 12px,transparent 12px 24px);background-size:120px 120px,auto;background-position:0 0}
+.aviso{position:fixed;left:50%;top:14px;z-index:70;display:flex;flex-direction:column;align-items:center;gap:8px;width:max-content;max-width:min(88vw,420px);padding:12px 20px 14px;text-align:center;background:#fbf6ec;border:2.5px solid var(--ink);border-radius:6px;box-shadow:5px 7px 0 rgba(0,0,0,.28);transform:translate(-50%,-160%) rotate(-1.5deg);transition:transform .35s cubic-bezier(.3,1.5,.5,1);cursor:pointer}
+.aviso.show{transform:translate(-50%,0) rotate(-1.5deg)}
+.aviso b{flex:none;font:400 24px "Special Elite",monospace;color:#fbf6ec;background:var(--red);padding:4px 10px 2px;transform:rotate(2deg);white-space:nowrap}
+.aviso.bingo b{background:#3c6b3f;font-size:27px}
+.aviso span{min-width:0;font:400 16px/1.25 "Courier Prime",monospace;color:var(--ink)}
+@media (prefers-reduced-motion:reduce){.aviso{transition:none}}
 .fxo{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .25s;pointer-events:none}
 .fxo.show{opacity:1;pointer-events:auto}
 .fxo img{width:min(96vw,92vh,620px);height:auto;aspect-ratio:1}
@@ -436,6 +442,7 @@ body{background-color:#a82229;background-image:url("data:image/svg+xml,%3Csvg%20
 </div>
 <div class="bubble" id="bubble" role="status"></div>
 <div class="fxo" id="fxo" aria-hidden="true"></div>
+<div class="aviso" id="aviso" role="status" aria-live="polite"></div>
 <div class="snow" id="snow" aria-hidden="true"></div>
 <div class="sheetbg qz" id="quizBg" hidden><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="qzQ">
   <div class="num" id="qzStep"></div>
@@ -541,6 +548,36 @@ async function playFx(k,msg,n){
   clearTimeout(fxT);fxT=setTimeout(close,FX[k].ms);o.onclick=close;
 }
 (window.requestIdleCallback||(f=>setTimeout(f,1500)))(fxPreload);
+// Avisos: when someone makes a line or a bingo, everyone else gets a banner.
+// The sender's phone pings a realtime channel; each receiver checks estado() before showing anything,
+// so a ping alone proves nothing. estado() is also compared on return to the page and every 30 s,
+// so a phone that was asleep still learns what it missed.
+const AV_SEEN="bingo:avisos-vistos";let avCh=null,avQ=[],avBusy=false,avPend=null,avT=null;
+const avLevel=r=>r.lleno?2:(r.lineas>0?1:0);
+function avShow(){if(avBusy||!avQ.length)return;avBusy=true;const a=avQ.shift(),el=$("#aviso");
+  el.className="aviso"+(a.lvl===2?" bingo":"");
+  el.innerHTML=`<b>${a.lvl===2?"¡BINGO!":"¡LÍNEA!"}</b><span>${esc(a.nombre)} cantó ${a.lvl===2?"bingo":"línea"} con el cartón ${pad2(a.id)}</span>`;
+  try{navigator.vibrate&&navigator.vibrate(a.lvl===2?[90,50,90,50,160]:[90,50,90])}catch(e){}
+  requestAnimationFrame(()=>el.classList.add("show"));
+  const done=()=>{el.classList.remove("show");el.onclick=null;clearTimeout(avT);setTimeout(()=>{avBusy=false;avShow()},400)};
+  el.onclick=done;avT=setTimeout(done,a.lvl===2?7000:4500)}
+async function avCheck(){
+  if(!sb)return;let rows;try{rows=await rpc("estado",{})}catch(e){return}
+  const seen=store.get(AV_SEEN),first=!seen,next={};
+  for(const r of rows||[]){const lvl=avLevel(r);next[r.id]=lvl;
+    if(first||!r.nombre)continue;
+    const before=seen[r.id]||0;
+    if(lvl>before&&!(st&&st.id===r.id))avQ.push({id:r.id,nombre:r.nombre,lvl});}
+  store.set(AV_SEEN,next);avShow()}
+function avInit(){if(!sb)return;
+  try{avCh=sb.channel("bingo-cantos",{config:{broadcast:{self:false}}});
+    avCh.on("broadcast",{event:"canto"},()=>{clearTimeout(avPend);avPend=setTimeout(avCheck,1200)}).subscribe()}catch(e){avCh=null}
+  avCheck();
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)avCheck()});
+  setInterval(()=>{if(!document.hidden)avCheck()},30000)}
+let avSend=false;
+function avPing(){if(!avCh)return;try{avCh.send({type:"broadcast",event:"canto",payload:{id:st&&st.id}})}catch(e){}}
+avInit();
 function confetti(n){const c=document.createElement("div");c.className="confetti";const cols=["#d23b37","#e9b23a","#3f8f4e","#ffffff","#b7c79d"];
  c.innerHTML=Array.from({length:n},(_,i)=>`<i style="left:50%;top:45%;background:${cols[i%5]};--x:${Math.round((Math.random()-.5)*innerWidth)}px;--y:${Math.round((Math.random()-.2)*innerHeight*.9)}px;--rr:${Math.round(Math.random()*720)}deg;animation-delay:${Math.random()*.15}s"></i>`).join("");
  document.body.appendChild(c);setTimeout(()=>c.remove(),2000)}
@@ -627,13 +664,14 @@ addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#sheetBg").hidden)closeS
 $("#shGo").addEventListener("click",()=>{const i=shI;$("#sheetBg").hidden=true;toggleCell(i)});
 $("#grid").addEventListener("click",e=>{const b=e.target.closest("button.cell");if(b)openSheet(+b.dataset.i)});
 let syncT=null;
-function syncMarks(){if(!sb||!st)return;clearTimeout(syncT);const id=st.id,m=st.marks.slice(),w=evalWins();syncT=setTimeout(()=>{rpc("guardar_sellos",{p_id:id,p_token:TOKEN,p_marks:m,p_lineas:w.count,p_lleno:w.full}).catch(()=>{})},500)}
+function syncMarks(){if(!sb||!st)return;clearTimeout(syncT);const id=st.id,m=st.marks.slice(),w=evalWins();syncT=setTimeout(()=>{const ping=avSend;avSend=false;rpc("guardar_sellos",{p_id:id,p_token:TOKEN,p_marks:m,p_lineas:w.count,p_lleno:w.full}).then(()=>{if(ping)avPing()}).catch(()=>{})},500)}
 function toggleCell(i){
   const s=st.cells[i];st.marks[i]=!st.marks[i];store.set(key(st.id),st.marks);
   if(st.marks[i]){$("#lastTxt").textContent=SIT[s].t;const l=$("#lastLink");l.href="#casilla-"+(s+1);l.hidden=false}
   const was=k=>k===i?!st.marks[i]:st.marks[k],prev=new Set(LINES.filter(L=>L.every(was)).map(String));
   const w=update(i);
   if(w.full&&!st.full){playFx("bingo","¡BINGO!",120)}else if(w.count&&!st.lines){playFx("linea","¡LÍNEA!",60)}
+  if((w.full&&!st.full)||(w.count&&!st.lines))avSend=true;
   if(w.count&&!st.lines){
     LINES.filter(L=>L.every(k=>st.marks[k])&&!prev.has(String(L))).forEach(L=>L.forEach((k,n)=>{const c=document.querySelector(`#grid .cell:nth-child(${k+1})`);if(c){c.style.setProperty("--k",n);c.classList.remove("hop");void c.offsetWidth;c.classList.add("hop")}}));
   }
